@@ -37,6 +37,25 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/books/${id}/`);
+      fetchBooks();
+    } catch (err) {
+      setError('Could not delete book.');
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await api.patch(`/books/${id}/`, { status: newStatus });
+      fetchBooks();
+    } catch (err) {
+      setError('Could not update book.');
+    }
+  };
+
+
   if (loading) return <p>Loading...</p>;
 
   return (
@@ -46,10 +65,19 @@ export default function Home() {
       {books.length === 0 ? (
         <p>No books yet — add your first one below.</p>
       ) : (
-        <ul>
+         <ul>
           {books.map((book) => (
             <li key={book.id}>
-              {book.title} — {book.status}
+              {book.title} —{' '}
+              <select
+                value={book.status}
+                onChange={(e) => handleStatusChange(book.id, e.target.value)}
+              >
+                <option value="want_to_read">Want to Read</option>
+                <option value="reading">Currently Reading</option>
+                <option value="read">Read</option>
+              </select>{' '}
+              <button onClick={() => handleDelete(book.id)}>Delete</button>
             </li>
           ))}
         </ul>
