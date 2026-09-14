@@ -6,11 +6,13 @@ import './App.css';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Home />} />
-    </Routes>
+   <div className="bg-stone-50 min-h-screen text-stone-800">
+  <Routes>
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+    <Route path="/" element={<Home />} />
+  </Routes>
+</div>
   );
 }
 
