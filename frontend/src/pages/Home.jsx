@@ -6,7 +6,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [title, setTitle] = useState('');
-  const [authorName, setAuthorName] = useState('');
+  const [authors, setAuthors] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [authorId, setAuthorId] = useState('');
+  const [newAuthorName, setNewAuthorName] = useState('');
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [newGenreName, setNewGenreName] = useState('');
 
   const fetchBooks = () => {
     api.get('/books/')
@@ -17,21 +22,44 @@ export default function Home() {
 
   useEffect(() => {
     fetchBooks();
+    api.get('/authors/').then((res) => setAuthors(res.data));
+    api.get('/genres/').then((res) => setGenres(res.data));
   }, []);
 
-  const handleAddBook = async (e) => {
+   const handleAddBook = async (e) => {
     e.preventDefault();
     try {
-      const authorRes = await api.post('/authors/', { name: authorName, bio: '' });
+      let finalAuthorId = authorId;
+
+      if (authorId === 'new') {
+        const authorRes = await api.post('/authors/', { name: newAuthorName, bio: '' });
+        finalAuthorId = authorRes.data.id;
+      }
+
+      let genreIds = [...selectedGenres];
+      if (newGenreName.trim()) {
+        const genreRes = await api.post('/genres/', { name: newGenreName });
+        genreIds.push(genreRes.data.id);
+      }
+
       await api.post('/books/', {
         title,
-        author: authorRes.data.id,
-        genres: [],
+        author: finalAuthorId,
+        genres: genreIds,
         status: 'want_to_read',
       });
+
       setTitle('');
-      setAuthorName('');
+      setAuthorId('');
+      setNewAuthorName('');
+      setSelectedGenres([]);
+      setNewGenreName('');
       fetchBooks();
+
+      const authorsRes = await api.get('/authors/');
+      setAuthors(authorsRes.data);
+      const genresRes = await api.get('/genres/');
+      setGenres(genresRes.data);
     } catch (err) {
       setError('Could not add book.');
     }
@@ -91,12 +119,47 @@ export default function Home() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <input
-          type="text"
-          placeholder="Author name"
-          value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-        />
+        <select value={authorId} onChange={(e) => setAuthorId(e.target.value)}>
+          <option value="">-- Select an author --</option>
+          {authors.map((a) => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+          <option value="new">+ Add new author</option>
+        </select>
+
+        {authorId === 'new' && (
+          <input
+            type="text"
+            placeholder="New author name"
+            value={newAuthorName}
+            onChange={(e) => setNewAuthorName(e.target.value)}
+          />
+        )}
+
+                <div>
+          <p>Genres:</p>
+          {genres.map((g) => (
+            <label key={g.id} style={{ marginRight: '10px' }}>
+              <input
+                type="checkbox"
+                checked={selectedGenres.includes(g.id)}
+                onChange={() => {
+                  setSelectedGenres((prev) =>
+                    prev.includes(g.id) ? prev.filter((id) => id !== g.id) : [...prev, g.id]
+                  );
+                }}
+              />
+              {g.name}
+            </label>
+          ))}
+          <input
+            type="text"
+            placeholder="Add new genre"
+            value={newGenreName}
+            onChange={(e) => setNewGenreName(e.target.value)}
+          />
+        </div>
+
         <button type="submit">Add Book</button>
       </form>
     </div>
