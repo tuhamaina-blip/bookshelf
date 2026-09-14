@@ -26,7 +26,7 @@ export default function Home() {
     api.get('/genres/').then((res) => setGenres(res.data));
   }, []);
 
-   const handleAddBook = async (e) => {
+  const handleAddBook = async (e) => {
     e.preventDefault();
     try {
       let finalAuthorId = authorId;
@@ -83,43 +83,69 @@ export default function Home() {
     }
   };
 
-
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className="text-stone-600 p-6">Loading...</p>;
 
   return (
-    <div>
-      <h2>My Books</h2>
-      {error && <p>{error}</p>}
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <h2 className="text-3xl font-bold text-stone-800 mb-6">My Books</h2>
+
+      {error && (
+        <p className="bg-red-50 text-red-700 border border-red-200 rounded-md px-4 py-2 mb-4 text-sm">
+          {error}
+        </p>
+      )}
+
       {books.length === 0 ? (
-        <p>No books yet — add your first one below.</p>
+        <p className="text-stone-500 italic mb-8">No books yet — add your first one below.</p>
       ) : (
-         <ul>
+        <ul className="space-y-3 mb-10">
           {books.map((book) => (
-            <li key={book.id}>
-              {book.title} —{' '}
-              <select
-                value={book.status}
-                onChange={(e) => handleStatusChange(book.id, e.target.value)}
-              >
-                <option value="want_to_read">Want to Read</option>
-                <option value="reading">Currently Reading</option>
-                <option value="read">Read</option>
-              </select>{' '}
-              <button onClick={() => handleDelete(book.id)}>Delete</button>
+            <li
+              key={book.id}
+              className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-sm"
+            >
+              <span className="font-medium text-stone-800">{book.title}</span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={book.status}
+                  onChange={(e) => handleStatusChange(book.id, e.target.value)}
+                  className="text-sm border border-stone-300 rounded-md px-2 py-1 bg-stone-50 text-stone-700"
+                >
+                  <option value="want_to_read">Want to Read</option>
+                  <option value="reading">Currently Reading</option>
+                  <option value="read">Read</option>
+                </select>
+                <button
+                  onClick={() => handleDelete(book.id)}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
 
-      <form onSubmit={handleAddBook}>
-        <h3>Add a Book</h3>
+      <form
+        onSubmit={handleAddBook}
+        className="bg-white border border-stone-200 rounded-lg p-6 shadow-sm space-y-4"
+      >
+        <h3 className="text-lg font-semibold text-stone-800">Add a Book</h3>
+
         <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
-        <select value={authorId} onChange={(e) => setAuthorId(e.target.value)}>
+
+        <select
+          value={authorId}
+          onChange={(e) => setAuthorId(e.target.value)}
+          className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 bg-white"
+        >
           <option value="">-- Select an author --</option>
           {authors.map((a) => (
             <option key={a.id} value={a.id}>{a.name}</option>
@@ -133,34 +159,47 @@ export default function Home() {
             placeholder="New author name"
             value={newAuthorName}
             onChange={(e) => setNewAuthorName(e.target.value)}
+            className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
         )}
 
-                <div>
-          <p>Genres:</p>
-          {genres.map((g) => (
-            <label key={g.id} style={{ marginRight: '10px' }}>
-              <input
-                type="checkbox"
-                checked={selectedGenres.includes(g.id)}
-                onChange={() => {
-                  setSelectedGenres((prev) =>
-                    prev.includes(g.id) ? prev.filter((id) => id !== g.id) : [...prev, g.id]
-                  );
-                }}
-              />
-              {g.name}
-            </label>
-          ))}
+        <div>
+          <p className="text-sm font-medium text-stone-600 mb-2">Genres</p>
+          <div className="flex flex-wrap gap-3 mb-3">
+            {genres.map((g) => (
+              <label
+                key={g.id}
+                className="flex items-center gap-1.5 text-sm text-stone-700 bg-stone-100 border border-stone-200 rounded-full px-3 py-1 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedGenres.includes(g.id)}
+                  onChange={() => {
+                    setSelectedGenres((prev) =>
+                      prev.includes(g.id) ? prev.filter((id) => id !== g.id) : [...prev, g.id]
+                    );
+                  }}
+                  className="accent-amber-500"
+                />
+                {g.name}
+              </label>
+            ))}
+          </div>
           <input
             type="text"
             placeholder="Add new genre"
             value={newGenreName}
             onChange={(e) => setNewGenreName(e.target.value)}
+            className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
         </div>
 
-        <button type="submit">Add Book</button>
+        <button
+          type="submit"
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-md px-4 py-2 transition-colors"
+        >
+          Add Book
+        </button>
       </form>
     </div>
   );
