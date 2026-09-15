@@ -15,7 +15,21 @@ class BookViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Book.objects.filter(user=self.request.user)
+        queryset = Book.objects.filter(user=self.request.user)
+
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+
+        genre_param = self.request.query_params.get('genre')
+        if genre_param:
+            queryset = queryset.filter(genres__id=genre_param)
+
+        search_param = self.request.query_params.get('search')
+        if search_param:
+            queryset = queryset.filter(title__icontains=search_param)
+
+        return queryset.distinct()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
