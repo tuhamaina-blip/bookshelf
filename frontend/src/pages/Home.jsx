@@ -12,16 +12,26 @@ export default function Home() {
   const [newAuthorName, setNewAuthorName] = useState('');
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [newGenreName, setNewGenreName] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [genreFilter, setGenreFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchBooks = () => {
-    api.get('/books/')
+    const params = {};
+    if (statusFilter) params.status = statusFilter;
+    if (genreFilter) params.genre = genreFilter;
+    if (searchQuery) params.search = searchQuery;
+
+    api.get('/books/', { params })
       .then((res) => setBooks(res.data))
       .catch(() => setError('Could not load books.'))
       .finally(() => setLoading(false));
   };
-
   useEffect(() => {
     fetchBooks();
+  }, [statusFilter, genreFilter, searchQuery]);
+
+  useEffect(() => {
     api.get('/authors/').then((res) => setAuthors(res.data));
     api.get('/genres/').then((res) => setGenres(res.data));
   }, []);
@@ -88,6 +98,37 @@ export default function Home() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <h2 className="text-3xl font-bold text-stone-800 mb-6">My Books</h2>
+      <div className="flex flex-wrap gap-3 mb-6">
+        <input
+          type="text"
+          placeholder="Search by title..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="border border-stone-300 rounded-md px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border border-stone-300 rounded-md px-3 py-2 text-sm text-stone-700 bg-white"
+        >
+          <option value="">All statuses</option>
+          <option value="want_to_read">Want to Read</option>
+          <option value="reading">Currently Reading</option>
+          <option value="read">Read</option>
+        </select>
+
+        <select
+          value={genreFilter}
+          onChange={(e) => setGenreFilter(e.target.value)}
+          className="border border-stone-300 rounded-md px-3 py-2 text-sm text-stone-700 bg-white"
+        >
+          <option value="">All genres</option>
+          {genres.map((g) => (
+            <option key={g.id} value={g.id}>{g.name}</option>
+          ))}
+        </select>
+      </div>
 
       {error && (
         <p className="bg-red-50 text-red-700 border border-red-200 rounded-md px-4 py-2 mb-4 text-sm">
