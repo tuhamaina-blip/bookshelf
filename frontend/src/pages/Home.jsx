@@ -15,6 +15,8 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [recommendations, setRecommendations] = useState([]);
+  const [recGenre, setRecGenre] = useState(null);
 
   const fetchBooks = () => {
     const params = {};
@@ -34,6 +36,10 @@ export default function Home() {
   useEffect(() => {
     api.get('/authors/').then((res) => setAuthors(res.data));
     api.get('/genres/').then((res) => setGenres(res.data));
+    api.get('/recommendations/').then((res) => {
+      setRecGenre(res.data.genre);
+      setRecommendations(res.data.books);
+    });
   }, []);
 
   const handleAddBook = async (e) => {
@@ -138,7 +144,7 @@ export default function Home() {
 
       {books.length === 0 ? (
         <p className="text-stone-500 italic mb-8">No books yet — add your first one below.</p>
-      ) : (
+            ) : (
         <ul className="space-y-3 mb-10">
           {books.map((book) => (
             <li
@@ -166,6 +172,38 @@ export default function Home() {
             </li>
           ))}
         </ul>
+      )}
+
+      {recommendations.length > 0 && (
+        <div className="mt-8 mb-10">
+          <h3 className="text-lg font-semibold text-stone-800 mb-4">
+            Recommended for you
+          </h3>
+          <p className="text-stone-600 mb-4">
+            Based on your reading history, we recommend these books in the genre of{' '}
+            <span className="font-medium">{recGenre}</span>.
+          </p>
+          <ul className="space-y-3">
+            {recommendations.map((book) => (
+              <li
+                key={book.title}
+                className="flex items-center gap-4 bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-sm"
+              >
+                {book.thumbnail && (
+                  <img
+                    src={book.thumbnail}
+                    alt={book.title}
+                    className="w-16 h-24 object-cover rounded-md"
+                  />
+                )}
+                <div>
+                  <h4 className="font-semibold text-stone-800">{book.title}</h4>
+                  <p className="text-sm text-stone-600">{book.authors}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <form
