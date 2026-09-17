@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from catalog.views import RegisterView, BookViewSet, AuthorViewSet, GenreViewSet
+from catalog.views import RecommendationsView, RegisterView, BookViewSet, AuthorViewSet, GenreViewSet
+
 
 router = DefaultRouter()
 router.register('books', BookViewSet, basename='book')
@@ -14,5 +15,6 @@ urlpatterns = [
     path('api/register/', RegisterView.as_view()),
     path('api/login/', TokenObtainPairView.as_view()),
     path('api/login/refresh/', TokenRefreshView.as_view()),
+    path('api/recommendations/', RecommendationsView.as_view()),
     path('api/', include(router.urls)),
 ]
