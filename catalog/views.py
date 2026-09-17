@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 from .models import Book, Author, Genre
 from .serializers import RegisterSerializer, BookSerializer, AuthorSerializer, GenreSerializer
 from rest_framework.response import Response
+import requests
+from django.db.models import Count
+from rest_framework.views import APIView
+from decouple import config
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -51,3 +55,46 @@ class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+class RecommendationsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        top_genre = (
+            Genre.objects.filter(books__user=request.user, books__status='read')
+            .annotate(count=Count('books'))
+            .order_by('-count')
+            .first()
+        )
+
+        if not top_genre:
+            top_genre = (
+                Genre.objects.filter(books__user=request.user)
+                .annotate(count=Count('books'))
+                .order_by('-count')
+                .first()
+            )
+
+        if not top_genre:
+            return Response({'genre': None, 'books': []})
+
+        api_url = 'https://www.googleapis.com/books/v1/volumes'
+        params = {'q': f'subject:{top_genre.name}', 'maxResults': 6, 'key': config('GOOGLE_BOOKS_API_KEY')}
+
+        try:
+            resp = requests.get(api_url, params=params, timeout=5)
+            data = resp.json()
+        except requests.RequestException:
+            return Response({'genre': top_genre.name, 'books': []})
+
+        results = []
+        for item in data.get('items', []):
+            info = item.get('volumeInfo', {})
+            results.append({
+                'title': info.get('title', 'Unknown title'),
+                'authors': ', '.join(info.get('authors', ['Unknown author'])),
+                'thumbnail': info.get('imageLinks', {}).get('thumbnail', ''),
+                'link': info.get('infoLink', ''),
+            })
+
+        return Response({'genre': top_genre.name, 'books': results})
