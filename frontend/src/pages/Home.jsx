@@ -17,6 +17,13 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [recommendations, setRecommendations] = useState([]);
   const [recGenre, setRecGenre] = useState(null);
+  const [editingBookId, setEditingBookId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editAuthorId, setEditAuthorId] = useState('');
+  const [editGenres, setEditGenres] = useState([]);
+  const [editRating, setEditRating] = useState('');
+  const [editCoverImage, setEditCoverImage] = useState('');
+  const [editDateFinished, setEditDateFinished] = useState('');
 
   const fetchBooks = () => {
     const params = {};
@@ -99,6 +106,37 @@ export default function Home() {
     }
   };
 
+  const startEdit = (book) => {
+  setEditingBookId(book.id);
+  setEditTitle(book.title);
+  setEditAuthorId(book.author);
+  setEditGenres(book.genres);
+  setEditRating(book.rating || '');
+  setEditCoverImage(book.cover_image || '');
+  setEditDateFinished(book.date_finished || '');
+};
+
+const cancelEdit = () => {
+  setEditingBookId(null);
+};
+
+const saveEdit = async (id) => {
+  try {
+    await api.patch(`/books/${id}/`, {
+      title: editTitle,
+      author: editAuthorId,
+      genres: editGenres,
+      rating: editRating || null,
+      cover_image: editCoverImage,
+      date_finished: editDateFinished || null,
+    });
+    setEditingBookId(null);
+    fetchBooks();
+  } catch (err) {
+    setError('Could not update book.');
+  }
+};
+
   if (loading) return <p className="text-stone-600 p-6">Loading...</p>;
 
   return (
@@ -146,31 +184,117 @@ export default function Home() {
         <p className="text-stone-500 italic mb-8">No books yet — add your first one below.</p>
             ) : (
         <ul className="space-y-3 mb-10">
-          {books.map((book) => (
-            <li
-              key={book.id}
-              className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-sm"
-            >
-              <span className="font-medium text-stone-800">{book.title}</span>
-              <div className="flex items-center gap-2">
-                <select
-                  value={book.status}
-                  onChange={(e) => handleStatusChange(book.id, e.target.value)}
-                  className="text-sm border border-stone-300 rounded-md px-2 py-1 bg-stone-50 text-stone-700"
+                        {books.map((book) =>
+              editingBookId === book.id ? (
+                <li key={book.id} className="bg-white border border-amber-300 rounded-lg px-4 py-4 shadow-sm space-y-3">
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800"
+                    placeholder="Title"
+                  />
+
+                  <select
+                    value={editAuthorId}
+                    onChange={(e) => setEditAuthorId(e.target.value)}
+                    className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 bg-white"
+                  >
+                    {authors.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+
+                  <div className="flex flex-wrap gap-2">
+                    {genres.map((g) => (
+                      <label key={g.id} className="flex items-center gap-1.5 text-sm text-stone-700 bg-stone-100 border border-stone-200 rounded-full px-3 py-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editGenres.includes(g.id)}
+                          onChange={() => {
+                            setEditGenres((prev) =>
+                              prev.includes(g.id) ? prev.filter((id) => id !== g.id) : [...prev, g.id]
+                            );
+                          }}
+                          className="accent-amber-500"
+                        />
+                        {g.name}
+                      </label>
+                    ))}
+                  </div>
+
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    placeholder="Rating (1-5)"
+                    value={editRating}
+                    onChange={(e) => setEditRating(e.target.value)}
+                    className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800"
+                  />
+
+                  <input
+                    type="url"
+                    placeholder="Cover image URL"
+                    value={editCoverImage}
+                    onChange={(e) => setEditCoverImage(e.target.value)}
+                    className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800"
+                  />
+
+                  <input
+                    type="date"
+                    value={editDateFinished}
+                    onChange={(e) => setEditDateFinished(e.target.value)}
+                    className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800"
+                  />
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => saveEdit(book.id)}
+                      className="bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-md px-4 py-2"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="bg-stone-200 hover:bg-stone-300 text-stone-700 font-medium rounded-md px-4 py-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </li>
+              ) : (
+                <li
+                  key={book.id}
+                  className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-sm"
                 >
-                  <option value="want_to_read">Want to Read</option>
-                  <option value="reading">Currently Reading</option>
-                  <option value="read">Read</option>
-                </select>
-                <button
-                  onClick={() => handleDelete(book.id)}
-                  className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1"
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
+                  <span className="font-medium text-stone-800">{book.title}</span>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={book.status}
+                      onChange={(e) => handleStatusChange(book.id, e.target.value)}
+                      className="text-sm border border-stone-300 rounded-md px-2 py-1 bg-stone-50 text-stone-700"
+                    >
+                      <option value="want_to_read">Want to Read</option>
+                      <option value="reading">Currently Reading</option>
+                      <option value="read">Read</option>
+                    </select>
+                    <button
+                      onClick={() => startEdit(book)}
+                      className="text-sm text-amber-600 hover:text-amber-700 font-medium px-2 py-1"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book.id)}
+                      className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              )
+            )}
         </ul>
       )}
 
