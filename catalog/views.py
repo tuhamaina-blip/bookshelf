@@ -1,12 +1,16 @@
 from rest_framework import generics, permissions, viewsets
 from django.contrib.auth.models import User
-from .models import Book, Author, Genre
-from .serializers import RegisterSerializer, BookSerializer, AuthorSerializer, GenreSerializer
-from rest_framework.response import Response
-import requests
 from django.db.models import Count
+from rest_framework.response import Response
 from rest_framework.views import APIView
+import requests
 from decouple import config
+from .models import Book, Author, Genre, UserBook, Review
+from .serializers import (
+    RegisterSerializer, BookSerializer, AuthorSerializer,
+    GenreSerializer, UserBookSerializer, ReviewSerializer
+)
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -15,28 +19,19 @@ class RegisterView(generics.CreateAPIView):
 
 
 class BookViewSet(viewsets.ModelViewSet):
+    queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Book.objects.filter(user=self.request.user)
-
-        status_param = self.request.query_params.get('status')
-        if status_param:
-            queryset = queryset.filter(status=status_param)
-
-        genre_param = self.request.query_params.get('genre')
-        if genre_param:
-            queryset = queryset.filter(genres__id=genre_param)
-
+        queryset = Book.objects.all()
         search_param = self.request.query_params.get('search')
         if search_param:
             queryset = queryset.filter(title__icontains=search_param)
-
+        genre_param = self.request.query_params.get('genre')
+        if genre_param:
+            queryset = queryset.filter(genres__id=genre_param)
         return queryset.distinct()
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 
 class AuthorViewSet(viewsets.ModelViewSet):
@@ -56,12 +51,43 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
+class UserBookViewSet(viewsets.ModelViewSet):
+    serializer_class = UserBookSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = UserBook.objects.filter(user=self.request.user)
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Review.objects.all()
+        book_param = self.request.query_params.get('book')
+        if book_param:
+            queryset = queryset.filter(book=book_param)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
 class RecommendationsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         top_genre = (
-            Genre.objects.filter(books__user=request.user, books__status='read')
+            Genre.objects.filter(books__on_shelves__user=request.user, books__on_shelves__status='read')
             .annotate(count=Count('books'))
             .order_by('-count')
             .first()
@@ -69,7 +95,7 @@ class RecommendationsView(APIView):
 
         if not top_genre:
             top_genre = (
-                Genre.objects.filter(books__user=request.user)
+                Genre.objects.filter(books__on_shelves__user=request.user)
                 .annotate(count=Count('books'))
                 .order_by('-count')
                 .first()
