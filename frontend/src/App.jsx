@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import BookDetail from './pages/BookDetail';
 
 function App() {
   return (
@@ -17,6 +18,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/books/:id"
+          element={
+            <ProtectedRoute>
+              <BookDetail />
             </ProtectedRoute>
           }
         />
