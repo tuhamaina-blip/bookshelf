@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
   const [books, setBooks] = useState([]);
@@ -268,7 +269,9 @@ const saveEdit = async (id) => {
                   key={book.id}
                   className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-sm"
                 >
-                  <span className="font-medium text-stone-800">{book.title}</span>
+                  <Link to={`/books/${book.id}`} className="font-medium text-stone-800 hover:text-amber-600">
+                    {book.title}
+                  </Link>
                   <div className="flex items-center gap-2">
                     <select
                       value={book.status}
