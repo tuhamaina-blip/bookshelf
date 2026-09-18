@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Book, Author, Genre
+from .models import Book, Author, Genre, UserBook, Review
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -26,8 +26,37 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
+class ReviewSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'username', 'book', 'rating', 'text', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
+
 class BookSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'genres', 'cover_image', 'status', 'rating', 'date_added', 'date_finished']
+        fields = ['id', 'title', 'author', 'genres', 'cover_image', 'average_rating', 'review_count']
+
+    def get_average_rating(self, obj):
+        reviews = obj.reviews.all()
+        if not reviews:
+            return None
+        return round(sum(r.rating for r in reviews) / len(reviews), 1)
+
+    def get_review_count(self, obj):
+        return obj.reviews.count()
+
+
+class UserBookSerializer(serializers.ModelSerializer):
+    book_detail = BookSerializer(source='book', read_only=True)
+
+    class Meta:
+        model = UserBook
+        fields = ['id', 'book', 'book_detail', 'status', 'date_added', 'date_finished']
         read_only_fields = ['user', 'date_added']
