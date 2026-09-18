@@ -18,12 +18,17 @@ export default function Navbar() {
 
       <div className="flex items-center gap-4">
         {user ? (
-          <button
-            onClick={handleLogout}
-            className="text-sm text-stone-600 hover:text-amber-600 font-medium"
-          >
-            Logout
-          </button>
+          <>
+            <Link to="/shelf" className="text-sm text-stone-600 hover:text-amber-600 font-medium">
+              My Shelf
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-stone-600 hover:text-amber-600 font-medium"
+            >
+              Logout
+            </button>
+          </>
         ) : (
           <>
             <Link to="/login" className="text-sm text-stone-600 hover:text-amber-600 font-medium">
