@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import BookDetail from './pages/BookDetail';
+import Shelf from './pages/Shelf';
 
 function App() {
   return (
@@ -26,6 +27,14 @@ function App() {
           element={
             <ProtectedRoute>
               <BookDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shelf"
+          element={
+            <ProtectedRoute>
+              <Shelf />
             </ProtectedRoute>
           }
         />
