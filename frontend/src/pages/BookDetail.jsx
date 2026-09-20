@@ -149,7 +149,9 @@ export default function BookDetail() {
           {reviews.map((r) => (
             <li key={r.id} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm">
               <div className="flex items-center justify-between mb-1">
-                <span className="font-medium text-stone-800">{r.username}</span>
+               <Link to={`/users/${r.username}`} className="font-medium text-stone-800 hover:text-amber-600">
+                  {r.username}
+                </Link>
                 <span className="text-amber-500">{'★'.repeat(r.rating)}</span>
               </div>
               {r.text && <p className="text-sm text-stone-600 mb-3">{r.text}</p>}

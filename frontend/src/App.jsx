@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import BookDetail from './pages/BookDetail';
 import Shelf from './pages/Shelf';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -35,6 +36,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Shelf />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users/:username"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
