@@ -16,7 +16,8 @@ export default function Home() {
   const [newGenreName, setNewGenreName] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
   const [recommendations, setRecommendations] = useState([]);
-  const [recGenre, setRecGenre] = useState(null); 
+  const [recGenre, setRecGenre] = useState(null);
+  const [coverImage, setCoverImage] = useState('');
 
   const fetchBooks = () => {
     const params = {};
@@ -61,6 +62,7 @@ export default function Home() {
         title,
         author: finalAuthorId,
         genres: genreIds,
+        cover_image: coverImage,
       });
 
       setTitle('');
@@ -68,6 +70,7 @@ export default function Home() {
       setNewAuthorName('');
       setSelectedGenres([]);
       setNewGenreName('');
+      setCoverImage('');
       fetchBooks();
 
       const authorsRes = await api.get('/authors/');
@@ -90,10 +93,10 @@ export default function Home() {
   if (loading) return <p className="text-stone-600 p-6">Loading...</p>;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <h2 className="text-3xl font-bold text-stone-800 mb-6">Book Catalog</h2>
 
-            <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap gap-3 mb-6">
         <input
           type="text"
           placeholder="Search by title..."
@@ -120,32 +123,42 @@ export default function Home() {
       )}
 
       {books.length === 0 ? (
-        <p className="text-stone-500 italic mb-8">No books in the catalog yet — add one below.</p>
+        <p className="text-stone-500 italic mb-10">No books in the catalog yet — add one below.</p>
       ) : (
-        <ul className="space-y-3 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 mb-10">
           {books.map((book) => (
-            <li
+            <div
               key={book.id}
-              className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-sm"
+              className="bg-white border border-stone-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col"
             >
-              <div>
-                <Link to={`/books/${book.id}`} className="font-medium text-stone-800 hover:text-amber-600">
+              <Link to={`/books/${book.id}`}>
+                {book.cover_image ? (
+                  <img src={book.cover_image} alt={book.title} className="w-full h-48 object-cover" />
+                ) : (
+                  <div className="w-full h-48 bg-stone-100 flex items-center justify-center text-stone-400 text-xs">
+                    No cover
+                  </div>
+                )}
+              </Link>
+              <div className="p-3 flex flex-col flex-1">
+                <Link to={`/books/${book.id}`} className="font-medium text-sm text-stone-800 hover:text-amber-600 line-clamp-2 mb-1">
                   {book.title}
                 </Link>
-                <p className="text-xs text-stone-500">
-                  {book.average_rating ? `★ ${book.average_rating} (${book.review_count} reviews)` : 'No reviews yet'}
+                <p className="text-xs text-stone-500 mb-3">
+                  {book.average_rating ? `★ ${book.average_rating} (${book.review_count})` : 'No reviews yet'}
                 </p>
+                <button
+                  onClick={() => addToShelf(book.id)}
+                  className="mt-auto text-xs bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-md px-3 py-1.5"
+                >
+                  Add to Shelf
+                </button>
               </div>
-              <button
-                onClick={() => addToShelf(book.id)}
-                className="text-sm bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-md px-3 py-1.5"
-              >
-                Add to Shelf
-              </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
+
       {recommendations.length > 0 && (
         <div className="mb-10">
           <h3 className="text-lg font-semibold text-stone-800 mb-4">
@@ -181,6 +194,14 @@ export default function Home() {
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+
+        <input
+          type="url"
+          placeholder="Cover image URL (optional)"
+          value={coverImage}
+          onChange={(e) => setCoverImage(e.target.value)}
           className="w-full border border-stone-300 rounded-md px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
 
