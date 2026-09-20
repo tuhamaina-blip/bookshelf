@@ -10,6 +10,8 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState('');
   const [reviewText, setReviewText] = useState('');
+  const [commentText, setCommentText] = useState({});
+  const [comments, setComments] = useState({});
 
   const fetchBook = () => {
     api.get(`/books/${id}/`).then((res) => setBook(res.data));
@@ -17,6 +19,11 @@ export default function BookDetail() {
 
   const fetchReviews = () => {
     api.get('/reviews/', { params: { book: id } }).then((res) => setReviews(res.data));
+  };
+
+  const fetchComments = async (reviewId) => {
+    const res = await api.get('/comments/', { params: { review: reviewId } });
+    setComments((prev) => ({ ...prev, [reviewId]: res.data }));
   };
 
   useEffect(() => {
@@ -32,6 +39,10 @@ export default function BookDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    reviews.forEach((r) => fetchComments(r.id));
+  }, [reviews]);
+
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     try {
@@ -42,6 +53,18 @@ export default function BookDetail() {
       fetchReviews();
     } catch (err) {
       setError('Could not submit review — you may have already reviewed this book.');
+    }
+  };
+
+  const handleAddComment = async (reviewId) => {
+    const text = commentText[reviewId];
+    if (!text || !text.trim()) return;
+    try {
+      await api.post('/comments/', { review: reviewId, text });
+      setCommentText((prev) => ({ ...prev, [reviewId]: '' }));
+      fetchComments(reviewId);
+    } catch (err) {
+      setError('Could not post comment.');
     }
   };
 
@@ -122,17 +145,44 @@ export default function BookDetail() {
         {reviews.length === 0 ? (
           <p className="text-stone-500 italic">No reviews yet — be the first!</p>
         ) : (
-          <ul className="space-y-3">
-            {reviews.map((r) => (
-              <li key={r.id} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-stone-800">{r.username}</span>
-                  <span className="text-amber-500">{'★'.repeat(r.rating)}</span>
-                </div>
-                {r.text && <p className="text-sm text-stone-600">{r.text}</p>}
-              </li>
-            ))}
-          </ul>
+         <ul className="space-y-3">
+          {reviews.map((r) => (
+            <li key={r.id} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-medium text-stone-800">{r.username}</span>
+                <span className="text-amber-500">{'★'.repeat(r.rating)}</span>
+              </div>
+              {r.text && <p className="text-sm text-stone-600 mb-3">{r.text}</p>}
+
+              {comments[r.id] && comments[r.id].length > 0 && (
+                <ul className="space-y-2 mb-3 pl-4 border-l-2 border-stone-100">
+                  {comments[r.id].map((c) => (
+                    <li key={c.id} className="text-sm">
+                      <span className="font-medium text-stone-700">{c.username}:</span>{' '}
+                      <span className="text-stone-600">{c.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Reply to this review..."
+                  value={commentText[r.id] || ''}
+                  onChange={(e) => setCommentText((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                  className="flex-1 border border-stone-300 rounded-md px-3 py-1.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+                <button
+                  onClick={() => handleAddComment(r.id)}
+                  className="text-sm bg-stone-200 hover:bg-stone-300 text-stone-700 font-medium rounded-md px-3 py-1.5"
+                >
+                  Reply
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
         )}
       </div>
     </div>
