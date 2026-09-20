@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import requests
 from decouple import config
-from .models import Book, Author, Genre, UserBook, Review
+from .models import Book, Author, Genre, UserBook, Review, Comment
 from .serializers import (
     RegisterSerializer, BookSerializer, AuthorSerializer,
-    GenreSerializer, UserBookSerializer, ReviewSerializer
+    GenreSerializer, UserBookSerializer, ReviewSerializer, CommentSerializer
 )
 
 
@@ -124,3 +124,17 @@ class RecommendationsView(APIView):
             })
 
         return Response({'genre': top_genre.name, 'books': results})
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Comment.objects.all()
+        review_param = self.request.query_params.get('review')
+        if review_param:
+            queryset = queryset.filter(review=review_param)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
