@@ -68,3 +68,18 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'review', 'user', 'username', 'text', 'created_at']
         read_only_fields = ['user', 'created_at']
+
+class PublicUserBookSerializer(serializers.ModelSerializer):
+    book_detail = BookSerializer(source='book', read_only=True)
+
+    class Meta:
+        model = UserBook
+        fields = ['id', 'book', 'book_detail', 'status']
+
+
+class PublicReviewSerializer(serializers.ModelSerializer):
+    book_title = serializers.CharField(source='book.title', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'book', 'book_title', 'rating', 'text', 'created_at']

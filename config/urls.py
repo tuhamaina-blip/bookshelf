@@ -4,7 +4,8 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from catalog.views import (
     RegisterView, BookViewSet, AuthorViewSet, GenreViewSet,
-    UserBookViewSet, ReviewViewSet, CommentViewSet, RecommendationsView
+    UserBookViewSet, ReviewViewSet, CommentViewSet, RecommendationsView,
+    PublicProfileView
 )
 
 router = DefaultRouter()
@@ -15,6 +16,7 @@ router.register('shelf', UserBookViewSet, basename='userbook')
 router.register('reviews', ReviewViewSet, basename='review')
 router.register('comments', CommentViewSet, basename='comment')
 urlpatterns = [
+    path('api/users/<str:username>/', PublicProfileView.as_view()),
     path('admin/', admin.site.urls),
     path('api/register/', RegisterView.as_view()),
     path('api/login/', TokenObtainPairView.as_view()),

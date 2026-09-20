@@ -8,8 +8,10 @@ from decouple import config
 from .models import Book, Author, Genre, UserBook, Review, Comment
 from .serializers import (
     RegisterSerializer, BookSerializer, AuthorSerializer,
-    GenreSerializer, UserBookSerializer, ReviewSerializer, CommentSerializer
+    GenreSerializer, UserBookSerializer, ReviewSerializer, CommentSerializer,
+    PublicUserBookSerializer, PublicReviewSerializer
 )
+from django.shortcuts import get_object_or_404
 
 
 class RegisterView(generics.CreateAPIView):
@@ -138,3 +140,17 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+class PublicProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
+        shelf = UserBook.objects.filter(user=user)
+        reviews = Review.objects.filter(user=user)
+
+        return Response({
+            'username': user.username,
+            'shelf': PublicUserBookSerializer(shelf, many=True).data,
+            'reviews': PublicReviewSerializer(reviews, many=True).data,
+        })
