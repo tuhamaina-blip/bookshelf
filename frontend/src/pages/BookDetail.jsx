@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -12,6 +13,10 @@ export default function BookDetail() {
   const [reviewText, setReviewText] = useState('');
   const [commentText, setCommentText] = useState({});
   const [comments, setComments] = useState({});
+  const { username } = useAuth();
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editRating, setEditRating] = useState('');
+  const [editText, setEditText] = useState('');
 
   const fetchBook = () => {
     api.get(`/books/${id}/`).then((res) => setBook(res.data));
@@ -70,6 +75,37 @@ export default function BookDetail() {
 
   if (loading) return <p className="text-stone-600 p-6">Loading...</p>;
   if (!book) return null;
+
+  const startEditReview = (review) => {
+    setEditingReviewId(review.id);
+    setEditRating(review.rating);
+    setEditText(review.text);
+  };
+
+  const cancelEditReview = () => {
+    setEditingReviewId(null);
+  };
+
+  const saveEditReview = async (reviewId) => {
+    try {
+      await api.patch(`/reviews/${reviewId}/`, { rating: Number(editRating), text: editText });
+      setEditingReviewId(null);
+      fetchBook();
+      fetchReviews();
+    } catch (err) {
+      setError('Could not update review.');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await api.delete(`/reviews/${reviewId}/`);
+      fetchBook();
+      fetchReviews();
+    } catch (err) {
+      setError('Could not delete review.');
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -147,15 +183,68 @@ export default function BookDetail() {
         ) : (
          <ul className="space-y-3">
           {reviews.map((r) => (
-            <li key={r.id} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-1">
-               <Link to={`/users/${r.username}`} className="font-medium text-stone-800 hover:text-amber-600">
-                  {r.username}
-                </Link>
-                <span className="text-amber-500">{'★'.repeat(r.rating)}</span>
+          <li key={r.id} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm">
+            {editingReviewId === r.id ? (
+              <div className="space-y-2 mb-3">
+                <select
+                  value={editRating}
+                  onChange={(e) => setEditRating(e.target.value)}
+                  className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm text-stone-800 bg-white"
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n} star{n > 1 ? 's' : ''}</option>
+                  ))}
+                </select>
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  rows={2}
+                  className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm text-stone-800"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => saveEditReview(r.id)}
+                    className="text-xs bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-md px-3 py-1.5"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelEditReview}
+                    className="text-xs bg-stone-200 hover:bg-stone-300 text-stone-700 font-medium rounded-md px-3 py-1.5"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-              {r.text && <p className="text-sm text-stone-600 mb-3">{r.text}</p>}
-
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <Link to={`/users/${r.username}`} className="font-medium text-stone-800 hover:text-amber-600">
+                    {r.username}
+                  </Link>
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-500">{'★'.repeat(r.rating)}</span>
+                    {r.username === username && (
+                      <>
+                        <button
+                          onClick={() => startEditReview(r)}
+                          className="text-xs text-amber-600 hover:text-amber-700 font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteReview(r.id)}
+                          className="text-xs text-red-600 hover:text-red-700 font-medium"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {r.text && <p className="text-sm text-stone-600 mb-3">{r.text}</p>}
+              </>
+            )}
               {comments[r.id] && comments[r.id].length > 0 && (
                 <ul className="space-y-2 mb-3 pl-4 border-l-2 border-stone-100">
                   {comments[r.id].map((c) => (
