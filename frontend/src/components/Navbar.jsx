@@ -12,13 +12,16 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b border-stone-200 px-6 py-4 flex items-center justify-between">
-      <Link to="/" className="text-xl font-bold text-amber-600">
+      <Link to={user ? '/catalog' : '/'} className="text-xl font-bold text-amber-600">
         BookShelf
       </Link>
 
       <div className="flex items-center gap-4">
         {user ? (
           <>
+            <Link to="/catalog" className="text-sm text-stone-600 hover:text-amber-600 font-medium">
+              Catalog
+            </Link>
             <Link to="/shelf" className="text-sm text-stone-600 hover:text-amber-600 font-medium">
               My Shelf
             </Link>
