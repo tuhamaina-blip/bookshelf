@@ -14,7 +14,7 @@ export default function Login() {
     setError('');
     try {
       await login(username, password);
-      navigate('/');
+      navigate('/catalog');
     } catch (err) {
       setError('Invalid username or password.');
     }
