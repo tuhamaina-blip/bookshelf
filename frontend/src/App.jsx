@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import BookDetail from './pages/BookDetail';
 import Shelf from './pages/Shelf';
 import Profile from './pages/Profile';
+import Landing from './pages/Landing';
 
 function App() {
   return (
@@ -15,8 +16,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Landing />} />
         <Route
-          path="/"
+          path="/catalog"
           element={
             <ProtectedRoute>
               <Home />
