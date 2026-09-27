@@ -30,6 +30,11 @@ export default function Home() {
       .finally(() => setLoading(false));
   };
 
+  const popularBooks = [...books]
+    .filter((b) => b.average_rating)
+    .sort((a, b) => b.average_rating - a.average_rating)
+    .slice(0, 4);
+
   useEffect(() => {
     fetchBooks();
   }, [searchQuery, genreFilter]);
@@ -115,6 +120,33 @@ export default function Home() {
           ))}
         </select>
       </div>
+
+      {popularBooks.length > 0 && (
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-stone-800 mb-4">Popular Right Now</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+            {popularBooks.map((book) => (
+              <Link
+                key={book.id}
+                to={`/books/${book.id}`}
+                className="bg-white border border-stone-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {book.cover_image ? (
+                  <img src={book.cover_image} alt={book.title} className="w-full h-40 object-cover" />
+                ) : (
+                  <div className="w-full h-40 bg-stone-100 flex items-center justify-center text-stone-400 text-xs">
+                    No cover
+                  </div>
+                )}
+                <div className="p-2">
+                  <p className="text-xs font-medium text-stone-800 line-clamp-2">{book.title}</p>
+                  <p className="text-xs text-amber-600">★ {book.average_rating}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="bg-red-50 text-red-700 border border-red-200 rounded-md px-4 py-2 mb-4 text-sm">
