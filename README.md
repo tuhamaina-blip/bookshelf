@@ -145,7 +145,7 @@ All endpoints are prefixed with `/api/` and require a valid JWT access token in 
 ### Backend Setup
 
 ```bash
-git clone https://github.com/RoyKelvin-04/vessel_predictor_model
+git clone https://github.com/tuhamaina-blip/bookshelf
 cd bookshelf
 
 python -m venv venv
