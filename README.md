@@ -145,11 +145,11 @@ All endpoints are prefixed with `/api/` and require a valid JWT access token in 
 ### Backend Setup
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/RoyKelvin-04/vessel_predictor_model
 cd bookshelf
 
 python -m venv venv
-source venv/Scripts/activate   # or venv\Scripts\activate on Windows cmd
+source venv/Scripts/activate  
 
 pip install -r requirements.txt
 ```
@@ -232,7 +232,7 @@ bookshelf/
 │       ├── context/        # AuthContext for login state
 │       ├── components/     # Navbar, ProtectedRoute
 │       └── pages/          # Home (Catalog), Shelf, BookDetail, Profile, Login, Register
-├── build.sh                # Production build script (used by Render)
+├── build.sh                # Production build script
 └── requirements.txt
 ```
 
