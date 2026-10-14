@@ -154,18 +154,7 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in the project root:
-
-```
-DB_NAME=bookshelf_db
-DB_USER=postgres
-DB_PASSWORD=your_postgres_password
-DB_HOST=localhost
-DB_PORT=5432
-SECRET_KEY=your_django_secret_key
-DEBUG=True
-GOOGLE_BOOKS_API_KEY=your_google_books_api_key
-```
+Create a `.env` file in the project root
 
 Create the database and run migrations:
 
