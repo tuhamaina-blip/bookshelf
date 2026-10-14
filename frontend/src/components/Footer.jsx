@@ -32,20 +32,13 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold text-white uppercase tracking-wide mb-3">Built With</h4>
-          <ul className="space-y-2 text-sm text-stone-400">
-            <li>React and Tailwind CSS</li>
-            <li>Django REST Framework</li>
-            <li>PostgreSQL</li>
-            <li>Google Books API</li>
-          </ul>
+          <h4 className="text-sm font-semibold text-white uppercase tracking-wide mb-3">Follow Us</h4>
         </div>
       </div>
 
       <div className="border-t border-stone-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
           <p>&copy; {new Date().getFullYear()} BookShelf. All rights reserved.</p>
-          <p>A capstone project by Matthew, Zindua School</p>
         </div>
       </div>
     </footer>
