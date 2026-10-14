@@ -33,6 +33,11 @@ export default function Footer() {
 
         <div>
           <h4 className="text-sm font-semibold text-white uppercase tracking-wide mb-3">Follow Us</h4>
+          <ul className="space-y-2 text-sm">
+            <li><a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400">Twitter</a></li>
+            <li><a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400">Facebook</a></li>
+            <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400">Instagram</a></li>
+          </ul>
         </div>
       </div>
 
